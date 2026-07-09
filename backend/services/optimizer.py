@@ -1,7 +1,10 @@
 import numpy as np
 from scipy.optimize import minimize
-from metrics import calculate_portfolio_return, calculate_portfolio_volatility, calculate_sharpe_ratio
-
+from services.metrics import (
+    calculate_portfolio_return,
+    calculate_portfolio_volatility,
+    calculate_sharpe_ratio,
+)
 
 def negative_sharpe_ratio(weights: np.ndarray, annual_returns, cov_matrix, risk_free_rate: float = 0.02) -> float:
     """
