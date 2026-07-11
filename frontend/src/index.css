@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root {
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+  font-family: var(--sans);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background-color: #09090b; /* zinc-950 equivalent */
+  color: #f4f4f5; /* zinc-100 equivalent */
+  min-height: 100vh;
+}
+
+/* Override the default layout limits on root to allow a full-screen layout */
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  border-inline: none;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
