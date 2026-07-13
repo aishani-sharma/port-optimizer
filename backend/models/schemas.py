@@ -32,3 +32,14 @@ class SimulatedPortfolio(BaseModel):
 class MonteCarloResponse(BaseModel):
     simulations: List[SimulatedPortfolio]
     best_sharpe_portfolio: SimulatedPortfolio
+
+
+class SimulatedPoint(BaseModel):
+    expected_return: float
+    volatility: float
+    sharpe_ratio: float
+
+
+class MonteCarloResponse(BaseModel):
+    simulations: List[SimulatedPoint]          # lightweight — just for scatter plot
+    best_sharpe_portfolio: SimulatedPortfolio   # full detail, including weights
