@@ -2,6 +2,8 @@ export interface PortfolioRequest {
   tickers: string[];
   period?: string;
   interval?: string;
+  max_weight?: number;
+  max_volatility?: number | null;
 }
 
 export interface PortfolioResponse {

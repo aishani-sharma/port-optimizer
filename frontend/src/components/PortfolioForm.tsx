@@ -3,15 +3,11 @@ import apiClient from '../api/client';
 import type { PortfolioResponse } from '../types/portfolio';
 import EfficientFrontierChart from './EfficientFrontierChart';
 import type { MonteCarloResponse } from '../types/portfolio';
-
+import RiskQuestionnaire from './RiskQuestionnaire';
+import type { RiskConstraints } from '../types/riskProfile';
 
 export default function PortfolioForm() {
-  // Why use local state for input, loading, and error?
-  // 1. input: Tracks the raw string typed by the user in real-time.
-  // 2. loading: Tracks whether an asynchronous API call is currently in flight.
-  //    This allows us to disable the button to prevent double-submissions, show loading animations, 
-  //    and keep the user informed.
-  // 3. error: Stores any error messages returned by the API or validation, so we can display it.
+  const [riskConstraints, setRiskConstraints] = useState<RiskConstraints | null>(null);
   const [tickersInput, setTickersInput] = useState<string>('AAPL, MSFT, GOOGL, AMZN');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +33,11 @@ export default function PortfolioForm() {
 
     try {
       // POST payload matches the PortfolioRequest interface: { tickers: string[] }
+      // Wired with optional constraints from risk profile
       const response = await apiClient.post<PortfolioResponse>('/portfolio/optimize', {
         tickers,
+        max_weight: riskConstraints?.maxWeight,
+        max_volatility: riskConstraints?.maxVolatility,
       });
       setResult(response.data);
       const mcResponse = await apiClient.post<MonteCarloResponse>('/portfolio/simulate', {
@@ -66,8 +65,47 @@ export default function PortfolioForm() {
     return val.toFixed(2);
   };
 
+  if (!riskConstraints) {
+    return <RiskQuestionnaire onComplete={(constraints) => setRiskConstraints(constraints)} />;
+  }
+
   return (
     <div className="w-full max-w-xl mx-auto space-y-8">
+      {/* Risk Profile Banner */}
+      <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-800 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all duration-300 hover:border-zinc-700/60">
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold block mb-0.5">Active Constraints</span>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="text-sm font-semibold text-zinc-100">
+              Risk Profile: <span className="text-red-500 font-bold">{riskConstraints.category}</span>
+            </span>
+            <span className="text-zinc-700 text-xs hidden sm:inline">•</span>
+            <span className="text-xs text-zinc-400">
+              Max Asset Weight: {formatPercent(riskConstraints.maxWeight)}
+            </span>
+            {riskConstraints.maxVolatility !== null && (
+              <>
+                <span className="text-zinc-700 text-xs hidden sm:inline">•</span>
+                <span className="text-xs text-zinc-400">
+                  Max Volatility: {formatPercent(riskConstraints.maxVolatility)}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={() => {
+            setRiskConstraints(null);
+            setResult(null);
+            setMcResult(null);
+            setError(null);
+          }}
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 cursor-pointer transition-all duration-200 self-start sm:self-center"
+        >
+          Redo Questionnaire
+        </button>
+      </div>
+
       {/* Optimization Input Card */}
       <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-800 p-6 rounded-2xl shadow-xl transition-all duration-300 hover:border-zinc-700/60">
         <form onSubmit={handleSubmit} className="space-y-6">
