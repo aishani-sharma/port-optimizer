@@ -7,6 +7,8 @@ class PortfolioRequest(BaseModel):
     tickers: List[str]
     period: str = "1y"
     interval: str = "1d"
+    max_weight: float = 1.0
+    max_volatility: float | None = None
 
 
 class PortfolioResponse(BaseModel):
@@ -27,11 +29,6 @@ class SimulatedPortfolio(BaseModel):
     expected_return: float
     volatility: float
     sharpe_ratio: float
-
-
-class MonteCarloResponse(BaseModel):
-    simulations: List[SimulatedPortfolio]
-    best_sharpe_portfolio: SimulatedPortfolio
 
 
 class SimulatedPoint(BaseModel):

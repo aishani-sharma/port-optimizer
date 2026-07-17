@@ -1,8 +1,8 @@
 # backend/routers/portfolio.py
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from models.schemas import (
     PortfolioRequest, PortfolioResponse,
-    MonteCarloRequest, MonteCarloResponse, SimulatedPortfolio
+    MonteCarloRequest, MonteCarloResponse, SimulatedPortfolio, SimulatedPoint
 )
 from services.data_fetcher import fetch_price_data
 from services.metrics import (
@@ -13,12 +13,10 @@ from services.metrics import (
     calculate_portfolio_volatility,
     calculate_sharpe_ratio,
 )
-from services.optimizer import optimize_max_sharpe
+from services.optimizer import optimize_max_sharpe, OptimizationError
 from services.monte_carlo import run_monte_carlo_simulation
-from models.schemas import MonteCarloRequest, MonteCarloResponse, SimulatedPortfolio, SimulatedPoint
 
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
-
 
 @router.post("/optimize", response_model=PortfolioResponse)
 def optimize_portfolio(request: PortfolioRequest):
@@ -27,7 +25,15 @@ def optimize_portfolio(request: PortfolioRequest):
     annual_returns = calculate_annual_returns(daily_returns)
     cov_matrix = calculate_covariance_matrix(daily_returns)
 
-    optimal_weights = optimize_max_sharpe(annual_returns, cov_matrix)
+    try:
+        optimal_weights = optimize_max_sharpe(
+            annual_returns,
+            cov_matrix,
+            max_weight=request.max_weight,
+            max_volatility=request.max_volatility,
+        )
+    except OptimizationError as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
     port_return = calculate_portfolio_return(optimal_weights, annual_returns)
     port_volatility = calculate_portfolio_volatility(optimal_weights, cov_matrix)
@@ -41,8 +47,6 @@ def optimize_portfolio(request: PortfolioRequest):
         volatility=float(port_volatility),
         sharpe_ratio=float(sharpe),
     )
-
-from models.schemas import MonteCarloRequest, MonteCarloResponse, SimulatedPortfolio, SimulatedPoint
 
 @router.post("/simulate", response_model=MonteCarloResponse)
 def simulate_portfolios(request: MonteCarloRequest):
