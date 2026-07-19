@@ -5,6 +5,7 @@ import EfficientFrontierChart from './EfficientFrontierChart';
 import type { MonteCarloResponse } from '../types/portfolio';
 import RiskQuestionnaire from './RiskQuestionnaire';
 import type { RiskConstraints } from '../types/riskProfile';
+import StockInfoCards from './StockInfoCards';
 
 export default function PortfolioForm() {
   const [riskConstraints, setRiskConstraints] = useState<RiskConstraints | null>(null);
@@ -158,7 +159,10 @@ export default function PortfolioForm() {
 
       {/* Results Section */}
       {result && (
-        <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 shadow-xl space-y-6 animate-fadeIn transition-all duration-300 hover:border-zinc-700/60">
+        <div className="space-y-8 animate-fadeIn">
+          <StockInfoCards tickers={Object.keys(result.weights)} />
+
+          <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 shadow-xl space-y-6 transition-all duration-300 hover:border-zinc-700/60">
           <div className="border-b border-zinc-800 pb-4">
             <h3 className="text-lg font-semibold text-zinc-100">Optimal Allocations</h3>
             <p className="text-xs text-zinc-400 mt-1">Maximum Sharpe ratio portfolio weights</p>
@@ -218,10 +222,11 @@ export default function PortfolioForm() {
               <span className="font-mono text-lg font-bold text-red-500">
                 {formatDecimal(result.sharpe_ratio)}
               </span>
-            </div>
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  )}
     </div>
   );
 }

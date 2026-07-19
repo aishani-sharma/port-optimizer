@@ -40,3 +40,22 @@ class SimulatedPoint(BaseModel):
 class MonteCarloResponse(BaseModel):
     simulations: List[SimulatedPoint]          # lightweight — just for scatter plot
     best_sharpe_portfolio: SimulatedPortfolio   # full detail, including weights
+
+
+class StockInfoRequest(BaseModel):
+    tickers: List[str]
+
+
+class StockInfo(BaseModel):
+    symbol: str
+    name: str
+    sector: str
+    currency: str
+    market_cap: float | None
+    current_price: float | None
+    one_year_return: float
+    volatility: float
+
+
+class StockInfoResponse(BaseModel):
+    stocks: List[StockInfo]

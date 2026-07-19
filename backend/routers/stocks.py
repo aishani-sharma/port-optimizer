@@ -1,7 +1,16 @@
 from fastapi import APIRouter
 from services.data_fetcher import fetch_price_data
+from models.schemas import StockInfoRequest, StockInfoResponse
+from services.stock_info import get_stock_info
 
 router = APIRouter(prefix="/stocks", tags=["stocks"])
+
+
+@router.post("/info", response_model=StockInfoResponse)
+def get_stocks_info(request: StockInfoRequest):
+    stocks_data = get_stock_info(request.tickers)
+    return StockInfoResponse(stocks=stocks_data)
+
 
 
 @router.get("/prices")

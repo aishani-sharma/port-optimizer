@@ -27,17 +27,24 @@ def fetch_price_data(
         group_by="ticker"   # keeps multi-ticker output organized per ticker
     )
 
-    # When multiple tickers are passed, yfinance returns a MultiIndex column
+    # When tickers are downloaded with group_by="ticker", yfinance returns a MultiIndex column
     # structure like (ticker, price_type). We only want the "Close" column
     # for each ticker, flattened into a simple DataFrame.
-    if len(tickers) > 1:
-        close_prices = pd.DataFrame({
-            ticker: raw_data[ticker]["Close"] for ticker in tickers
-        })
-    else:
-        # Single ticker download doesn't have the same MultiIndex structure
-        close_prices = raw_data[["Close"]]
-        close_prices.columns = tickers
+    # Note: This is true even for a single ticker when group_by="ticker" is used.
+    # We build the DataFrame defensively checking the column structure.
+    close_prices = pd.DataFrame()
+    for ticker in tickers:
+        try:
+            if isinstance(raw_data.columns, pd.MultiIndex):
+                if ticker in raw_data:
+                    close_prices[ticker] = raw_data[ticker]["Close"]
+            else:
+                if "Close" in raw_data:
+                    close_prices[ticker] = raw_data["Close"]
+                elif ticker in raw_data:
+                    close_prices[ticker] = raw_data[ticker]
+        except Exception:
+            pass
 
     # Drop rows where ANY ticker has missing data (e.g. one stock didn't
     # trade that day, or IPO'd later than others) — keeps all columns aligned
