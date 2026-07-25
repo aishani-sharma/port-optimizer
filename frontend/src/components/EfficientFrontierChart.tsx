@@ -8,6 +8,7 @@ import {
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
+    ReferenceDot,
 } from 'recharts'
 import type { SimulatedPoint, SimulatedPortfolio } from '../types/portfolio'
 
@@ -31,42 +32,75 @@ export default function EfficientFrontierChart({ simulations, bestPortfolio }: P
     }]
 
     return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-6">
-            <h2 className="text-lg font-semibold text-white mb-1">Efficient Frontier</h2>
-            <p className="text-sm text-zinc-400 mb-4">
-                {simulations.length.toLocaleString()} simulated portfolios
-            </p>
+        <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-4">
+            <div className="flex justify-between items-center mb-3">
+                <div>
+                    <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Efficient Frontier</h2>
+                    <p className="text-[10px] text-zinc-500">
+                        {simulations.length.toLocaleString()} simulated portfolios
+                    </p>
+                </div>
+                <div className="text-right">
+                    <span className="text-[10px] uppercase text-zinc-500 block">Best Sharpe Ratio</span>
+                    <span className="font-mono text-sm font-bold text-red-500">{bestPortfolio.sharpe_ratio.toFixed(2)}</span>
+                </div>
+            </div>
 
-            <div className="w-full h-[400px] relative min-w-0">
+            <div className="w-full h-[480px] relative min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
-                    <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                        <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
+                    <ScatterChart margin={{ top: 25, right: 35, bottom: 20, left: 10 }}>
+                        <CartesianGrid stroke="#1f1f23" strokeDasharray="3 3" />
                         <XAxis
                             type="number"
                             dataKey="volatility"
                             name="Volatility"
                             unit="%"
-                            stroke="#71717a"
-                            label={{ value: 'Volatility (%)', position: 'bottom', fill: '#a1a1aa' }}
+                            stroke="#52525b"
+                            tick={{ fontSize: 10 }}
+                            label={{ value: 'Volatility (%)', position: 'bottom', fill: '#71717a', fontSize: 11 }}
                         />
                         <YAxis
                             type="number"
                             dataKey="return"
                             name="Return"
                             unit="%"
-                            stroke="#71717a"
-                            label={{ value: 'Return (%)', angle: -90, position: 'left', fill: '#a1a1aa' }}
+                            stroke="#52525b"
+                            tick={{ fontSize: 10 }}
+                            label={{ value: 'Expected Return (%)', angle: -90, position: 'insideLeft', offset: 0, fill: '#71717a', fontSize: 11 }}
                         />
-                        <ZAxis range={[20, 20]} />
+                        <ZAxis range={[15, 15]} />
                         <Tooltip
                             cursor={{ strokeDasharray: '3 3' }}
-                            contentStyle={{ backgroundColor: '#18181b', border: '1px solid #3f3f46' }}
-                            formatter={(value: any) => (typeof value === 'number' ? value.toFixed(2) : value)}
+                            contentStyle={{ backgroundColor: '#09090b', border: '1px solid #27272a', borderRadius: '8px' }}
+                            formatter={(value: any, name: any) => {
+                                if (typeof value === 'number') {
+                                    return [`${value.toFixed(2)}%`, name];
+                                }
+                                return [value, name];
+                            }}
                         />
                         {/* Random simulated portfolios — the cloud */}
-                        <Scatter data={points} fill="#7f1d1d" opacity={0.5} />
+                        <Scatter data={points} fill="#7f1d1d" opacity={0.35} />
                         {/* Best Sharpe portfolio — highlighted */}
                         <Scatter data={bestPoint} fill="#ef4444" shape="star" />
+                        
+                        {/* Clearly label the best-Sharpe point directly on the chart */}
+                        <ReferenceDot
+                            x={bestPortfolio.volatility * 100}
+                            y={bestPortfolio.expected_return * 100}
+                            r={6}
+                            fill="#ef4444"
+                            stroke="#ffffff"
+                            strokeWidth={1.5}
+                            label={{
+                                value: `Max Sharpe (${bestPortfolio.sharpe_ratio.toFixed(2)})`,
+                                position: 'top',
+                                fill: '#ef4444',
+                                fontSize: 10,
+                                fontWeight: 'bold',
+                                offset: 10
+                            }}
+                        />
                     </ScatterChart>
                 </ResponsiveContainer>
             </div>
