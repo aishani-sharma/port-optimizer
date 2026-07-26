@@ -58,4 +58,27 @@ class StockInfo(BaseModel):
 
 
 class StockInfoResponse(BaseModel):
-    stocks: List[StockInfo]
+    stocks: List[StockInfo]
+
+class BacktestRequest(BaseModel):
+    tickers: List[str]
+    weights: dict[str, float]
+    period: str = "1y"
+    interval: str = "1d"
+    initial_investment: float = 10000
+    rebalance_frequency_days: int = 30
+
+
+class BacktestPoint(BaseModel):
+    date: str
+    portfolio_value: float
+    benchmark_value: float
+
+
+class BacktestResponse(BaseModel):
+    benchmark_ticker: str
+    points: List[BacktestPoint]
+    portfolio_final_value: float
+    benchmark_final_value: float
+    portfolio_return_pct: float
+    benchmark_return_pct: float

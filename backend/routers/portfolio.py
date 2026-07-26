@@ -1,8 +1,10 @@
 # backend/routers/portfolio.py
+import pandas as pd
 from fastapi import APIRouter, HTTPException
 from models.schemas import (
     PortfolioRequest, PortfolioResponse,
-    MonteCarloRequest, MonteCarloResponse, SimulatedPortfolio, SimulatedPoint
+    MonteCarloRequest, MonteCarloResponse, SimulatedPortfolio, SimulatedPoint,
+    BacktestRequest, BacktestResponse, BacktestPoint
 )
 from services.data_fetcher import fetch_price_data
 from services.metrics import (
@@ -15,8 +17,10 @@ from services.metrics import (
 )
 from services.optimizer import optimize_max_sharpe, OptimizationError
 from services.monte_carlo import run_monte_carlo_simulation
+from services.backtest import run_backtest, run_benchmark_backtest, get_benchmark_ticker
 
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
+
 
 @router.post("/optimize", response_model=PortfolioResponse)
 def optimize_portfolio(request: PortfolioRequest):
@@ -48,6 +52,7 @@ def optimize_portfolio(request: PortfolioRequest):
         sharpe_ratio=float(sharpe),
     )
 
+
 @router.post("/simulate", response_model=MonteCarloResponse)
 def simulate_portfolios(request: MonteCarloRequest):
     prices = fetch_price_data(request.tickers, period=request.period, interval=request.interval)
@@ -76,3 +81,46 @@ def simulate_portfolios(request: MonteCarloRequest):
     )
 
     return MonteCarloResponse(simulations=simulations, best_sharpe_portfolio=best_portfolio)
+
+
+@router.post("/backtest", response_model=BacktestResponse)
+def backtest_portfolio(request: BacktestRequest):
+    prices = fetch_price_data(request.tickers, period=request.period, interval=request.interval)
+
+    portfolio_result = run_backtest(
+        prices,
+        request.weights,
+        initial_investment=request.initial_investment,
+        rebalance_frequency_days=request.rebalance_frequency_days,
+    )
+
+    benchmark_ticker = get_benchmark_ticker(request.tickers)
+    benchmark_prices = fetch_price_data([benchmark_ticker], period=request.period, interval=request.interval)
+    benchmark_result = run_benchmark_backtest(
+        benchmark_prices[benchmark_ticker],
+        initial_investment=request.initial_investment,
+    )
+
+    # Merge portfolio and benchmark results on date into one aligned list of points
+    merged = pd.merge(portfolio_result, benchmark_result, on="date", suffixes=("_portfolio", "_benchmark"))
+
+    points = [
+        BacktestPoint(
+            date=str(row["date"].date()) if hasattr(row["date"], "date") else str(row["date"])[:10],
+            portfolio_value=float(row["portfolio_value_portfolio"]),
+            benchmark_value=float(row["portfolio_value_benchmark"]),
+        )
+        for _, row in merged.iterrows()
+    ]
+
+    portfolio_final = float(merged["portfolio_value_portfolio"].iloc[-1])
+    benchmark_final = float(merged["portfolio_value_benchmark"].iloc[-1])
+
+    return BacktestResponse(
+        benchmark_ticker=benchmark_ticker,
+        points=points,
+        portfolio_final_value=portfolio_final,
+        benchmark_final_value=benchmark_final,
+        portfolio_return_pct=(portfolio_final - request.initial_investment) / request.initial_investment,
+        benchmark_return_pct=(benchmark_final - request.initial_investment) / request.initial_investment,
+    )
