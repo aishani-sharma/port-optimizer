@@ -42,7 +42,7 @@ export default function EfficientFrontierChart({ simulations, bestPortfolio }: P
                 </div>
                 <div className="text-right">
                     <span className="text-[10px] uppercase text-zinc-500 block">Best Sharpe Ratio</span>
-                    <span className="font-mono text-sm font-bold text-red-500">{bestPortfolio.sharpe_ratio.toFixed(2)}</span>
+                    <span className="font-mono text-sm font-bold text-amber-400">{bestPortfolio.sharpe_ratio.toFixed(2)}</span>
                 </div>
             </div>
 
@@ -79,23 +79,23 @@ export default function EfficientFrontierChart({ simulations, bestPortfolio }: P
                                 return [value, name];
                             }}
                         />
-                        {/* Random simulated portfolios — the cloud */}
-                        <Scatter data={points} fill="#7f1d1d" opacity={0.35} />
+                        {/* Random simulated portfolios — amber/gold scatter cloud */}
+                        <Scatter data={points} fill="#78350f" opacity={0.4} />
                         {/* Best Sharpe portfolio — highlighted */}
-                        <Scatter data={bestPoint} fill="#ef4444" shape="star" />
+                        <Scatter data={bestPoint} fill="#f59e0b" shape="star" />
                         
                         {/* Clearly label the best-Sharpe point directly on the chart */}
                         <ReferenceDot
                             x={bestPortfolio.volatility * 100}
                             y={bestPortfolio.expected_return * 100}
                             r={6}
-                            fill="#ef4444"
+                            fill="#f59e0b"
                             stroke="#ffffff"
                             strokeWidth={1.5}
                             label={{
                                 value: `Max Sharpe (${bestPortfolio.sharpe_ratio.toFixed(2)})`,
                                 position: 'top',
-                                fill: '#ef4444',
+                                fill: '#f59e0b',
                                 fontSize: 10,
                                 fontWeight: 'bold',
                                 offset: 10

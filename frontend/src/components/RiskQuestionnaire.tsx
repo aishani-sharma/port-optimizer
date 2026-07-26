@@ -234,7 +234,7 @@ export default function RiskQuestionnaire({ onComplete }: RiskQuestionnaireProps
         {/* Card Header & Badge */}
         <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4 mb-8">
           <div>
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-red-500 bg-red-950/60 border border-red-900/40 px-2.5 py-1 rounded-full">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 bg-amber-950/60 border border-amber-900/40 px-2.5 py-1 rounded-full">
               Risk Profile Assessment
             </span>
             <p className="text-xs text-zinc-400 mt-2">
@@ -250,7 +250,7 @@ export default function RiskQuestionnaire({ onComplete }: RiskQuestionnaireProps
         <div className="relative flex items-center justify-between mb-10 px-3">
           <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-zinc-800/90 rounded-full z-0">
             <div 
-              className="h-full bg-red-600 rounded-full transition-all duration-300 ease-out shadow-sm shadow-red-600/50"
+              className="h-full bg-amber-500 rounded-full transition-all duration-300 ease-out shadow-sm shadow-amber-500/50"
               style={{ width: `${(currentStep / (QUESTIONS.length - 1)) * 100}%` }}
             />
           </div>
@@ -263,14 +263,14 @@ export default function RiskQuestionnaire({ onComplete }: RiskQuestionnaireProps
                 <div
                   className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-mono font-bold transition-all duration-300 border-2 ${
                     isCurrent
-                      ? 'bg-red-600 text-white shadow-xl shadow-red-600/40 border-red-400 scale-110 ring-4 ring-red-600/20'
+                      ? 'bg-amber-500 text-zinc-950 shadow-xl shadow-amber-500/40 border-amber-300 scale-110 ring-4 ring-amber-500/20'
                       : isCompleted
-                      ? 'bg-red-950 border-red-600 text-red-400 shadow-md shadow-red-950/40'
+                      ? 'bg-amber-950 border-amber-600 text-amber-400 shadow-md shadow-amber-950/40'
                       : 'bg-zinc-950 border-zinc-800 text-zinc-500'
                   }`}
                 >
                   {isCompleted ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-red-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-amber-400">
                       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                     </svg>
                   ) : (
@@ -305,7 +305,7 @@ export default function RiskQuestionnaire({ onComplete }: RiskQuestionnaireProps
                   onClick={() => handleSelect(currentQuestion.key, opt.value)}
                   className={`group w-full px-4 py-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all duration-200 select-none ${
                     isSelected
-                      ? 'bg-gradient-to-r from-red-950/40 via-red-950/20 to-zinc-900/80 border-red-500 text-white shadow-lg shadow-red-950/40 ring-1 ring-red-500/40'
+                      ? 'bg-gradient-to-r from-amber-950/40 via-amber-950/20 to-zinc-900/80 border-amber-500 text-white shadow-lg shadow-amber-950/40 ring-1 ring-amber-500/40'
                       : 'bg-zinc-900/60 border-zinc-800/90 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-850/80 hover:text-white'
                   }`}
                 >
@@ -314,7 +314,7 @@ export default function RiskQuestionnaire({ onComplete }: RiskQuestionnaireProps
                     <div
                       className={`w-9 h-9 flex items-center justify-center rounded-lg border transition-all duration-200 ${
                         isSelected
-                          ? 'bg-red-600/20 border-red-500/50 text-red-400 shadow-sm'
+                          ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 shadow-sm'
                           : 'bg-zinc-950 border-zinc-800/80 text-zinc-400 group-hover:text-zinc-200 group-hover:border-zinc-700'
                       }`}
                     >
@@ -330,12 +330,12 @@ export default function RiskQuestionnaire({ onComplete }: RiskQuestionnaireProps
                   <div
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                       isSelected
-                        ? 'border-red-500 bg-red-600 text-white shadow-md shadow-red-600/50 scale-105'
+                        ? 'border-amber-400 bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/50 scale-105'
                         : 'border-zinc-700 bg-zinc-950/80 group-hover:border-zinc-600'
                     }`}
                   >
                     {isSelected && (
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 text-white">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 text-zinc-950">
                         <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                       </svg>
                     )}
@@ -358,7 +358,7 @@ export default function RiskQuestionnaire({ onComplete }: RiskQuestionnaireProps
                 : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-850 hover:text-zinc-200 cursor-pointer'
             }`}
           >
-            ← Back
+            Back
           </button>
 
           <button
@@ -367,11 +367,11 @@ export default function RiskQuestionnaire({ onComplete }: RiskQuestionnaireProps
             disabled={!isAnswered}
             className={`px-6 py-2.5 text-xs sm:text-sm font-bold rounded-xl border transition-all duration-200 ${
               isAnswered
-                ? 'bg-red-600 hover:bg-red-500 active:bg-red-700 text-white cursor-pointer shadow-lg shadow-red-600/30 border-red-500/50 active:scale-[0.98]'
+                ? 'bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 cursor-pointer shadow-lg shadow-amber-500/30 border-amber-400/50 active:scale-[0.98]'
                 : 'bg-zinc-900/80 text-zinc-600 border-zinc-800/80 opacity-50 cursor-not-allowed shadow-none'
             }`}
           >
-            {isLastStep ? 'Complete Assessment' : 'Continue →'}
+            {isLastStep ? 'Complete Assessment' : 'Continue'}
           </button>
         </div>
       </div>

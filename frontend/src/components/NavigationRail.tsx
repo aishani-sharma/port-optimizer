@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type NavTab = 'optimizer' | 'research' | 'risk';
+export type NavTab = 'optimizer' | 'research' | 'risk' | 'backtest';
 
 interface NavigationRailProps {
   activeTab: NavTab;
@@ -43,6 +43,15 @@ export default function NavigationRail({
         </svg>
       ),
     },
+    {
+      id: 'backtest',
+      label: 'Backtest',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 flex-shrink-0">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 005.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.94" />
+        </svg>
+      ),
+    },
   ];
 
   return (
@@ -55,14 +64,9 @@ export default function NavigationRail({
       <div className="flex flex-col flex-grow">
         {/* Brand Header */}
         <div className="h-14 border-b border-zinc-900/80 flex items-center justify-between px-3.5">
-          <div className="flex items-center space-x-3 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-red-950/50">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 text-white">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-              </svg>
-            </div>
+          <div className="flex items-center overflow-hidden">
             {!isCollapsed && (
-              <span className="font-semibold text-zinc-100 tracking-tight text-base truncate">
+              <span className="font-bold text-zinc-100 tracking-tight text-base truncate">
                 PortOpt
               </span>
             )}
@@ -109,11 +113,11 @@ export default function NavigationRail({
                   isCollapsed ? 'justify-center px-0' : 'justify-start'
                 } ${
                   isActive
-                    ? 'bg-red-950/40 text-white border border-red-900/50 shadow-sm shadow-red-950/50 font-semibold'
+                    ? 'bg-amber-950/40 text-white border border-amber-900/50 shadow-sm shadow-amber-950/50 font-semibold'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 border border-transparent'
                 }`}
               >
-                <div className={isActive ? 'text-red-500' : 'text-zinc-400'}>
+                <div className={isActive ? 'text-amber-400' : 'text-zinc-400'}>
                   {item.icon}
                 </div>
                 {!isCollapsed && <span className="truncate">{item.label}</span>}

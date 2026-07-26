@@ -44,3 +44,27 @@ export interface StockPricesResponse {
   interval: string;
   data: Record<string, Record<string, number>>;
 }
+
+export interface BacktestRequest {
+  tickers: string[];
+  weights: Record<string, number>;
+  period?: string;
+  interval?: string;
+  initial_investment?: number;
+  rebalance_frequency_days?: number;
+}
+
+export interface BacktestPoint {
+  date: string;
+  portfolio_value: number;
+  benchmark_value: number;
+}
+
+export interface BacktestResponse {
+  benchmark_ticker: string;
+  points: BacktestPoint[];
+  portfolio_final_value: number;
+  benchmark_final_value: number;
+  portfolio_return_pct: number;
+  benchmark_return_pct: number;
+}

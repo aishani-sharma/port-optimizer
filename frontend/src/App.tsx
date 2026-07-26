@@ -3,18 +3,22 @@ import PortfolioForm from './components/PortfolioForm';
 import RiskQuestionnaire from './components/RiskQuestionnaire';
 import NavigationRail, { type NavTab } from './components/NavigationRail';
 import ResearchView from './components/ResearchView';
+import BacktestPage from './components/BacktestPage';
+import type { PortfolioResponse, MonteCarloResponse } from './types/portfolio';
 import type { RiskConstraints } from './types/riskProfile';
 
 /**
  * Main application component.
  * 
- * Multi-page dashboard with a persistent left navigation rail.
- * Near-black background (zinc-950) with red accents (red-500/red-600)
- * providing a sleek fintech aesthetic.
+ * Multi-page dashboard with persistent left navigation rail.
+ * Single source of truth for portfolio tickers, optimization results, and risk constraints.
  */
 function App() {
   const [riskConstraints, setRiskConstraints] = useState<RiskConstraints | null>(null);
-  const [tickers, setTickers] = useState<string[]>(['AAPL', 'MSFT', 'GOOGL', 'AMZN']);
+  const [tickers, setTickers] = useState<string[]>(['AAPL', 'MSFT', 'RELIANCE.NS', 'TCS.NS']);
+  const [optimizationResult, setOptimizationResult] = useState<PortfolioResponse | null>(null);
+  const [mcResult, setMcResult] = useState<MonteCarloResponse | null>(null);
+  const [lastOptimizedTickers, setLastOptimizedTickers] = useState<string[] | null>(null);
   const [activeTab, setActiveTab] = useState<NavTab>('optimizer');
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
@@ -23,15 +27,54 @@ function App() {
     return `${(val * 100).toFixed(2)}%`;
   };
 
+  const handleUpdateTickers = (updater: string[] | ((prev: string[]) => string[])) => {
+    setTickers((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      if (lastOptimizedTickers) {
+        const prevSorted = [...lastOptimizedTickers].sort().join(',');
+        const nextSorted = [...next].sort().join(',');
+        if (prevSorted !== nextSorted) {
+          setOptimizationResult(null);
+          setMcResult(null);
+          setLastOptimizedTickers(null);
+        }
+      }
+      return next;
+    });
+  };
+
+  const handleOptimize = (
+    optResult: PortfolioResponse,
+    mcRes: MonteCarloResponse,
+    optTickers: string[]
+  ) => {
+    setOptimizationResult(optResult);
+    setMcResult(mcRes);
+    setLastOptimizedTickers([...optTickers]);
+  };
+
+  const handleAddToPortfolio = (newTicker: string) => {
+    const clean = newTicker.trim().toUpperCase();
+    if (!clean) return;
+    handleUpdateTickers((prev) => {
+      if (!prev.includes(clean)) {
+        return [...prev, clean];
+      }
+      return prev;
+    });
+  };
+
   const handleRiskComplete = (constraints: RiskConstraints) => {
     setRiskConstraints(constraints);
     setActiveTab('optimizer');
   };
 
+  const optimalWeights = lastOptimizedTickers && optimizationResult ? optimizationResult.weights : null;
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-row relative overflow-hidden">
       {/* Decorative premium radial background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-red-900/10 blur-[140px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-amber-900/10 blur-[140px] rounded-full pointer-events-none" />
 
       {/* Persistent Left Navigation Rail */}
       <NavigationRail
@@ -52,6 +95,7 @@ function App() {
                 {activeTab === 'optimizer' && 'Portfolio Optimizer'}
                 {activeTab === 'research' && 'Asset Research & Fundamentals'}
                 {activeTab === 'risk' && 'Risk Tolerance Assessment'}
+                {activeTab === 'backtest' && 'Historical Backtesting'}
               </span>
             </div>
 
@@ -62,7 +106,7 @@ function App() {
                   <span className="text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">Constraints</span>
                   <span className="text-zinc-700">|</span>
                   <span className="text-zinc-300 font-medium">
-                    Profile: <span className="text-red-500 font-bold">{riskConstraints.category}</span>
+                    Profile: <span className="text-amber-500 font-bold">{riskConstraints.category}</span>
                   </span>
                   <span className="text-zinc-700">•</span>
                   <span className="text-zinc-400">
@@ -113,13 +157,19 @@ function App() {
               <PortfolioForm
                 riskConstraints={riskConstraints}
                 tickers={tickers}
-                setTickers={setTickers}
+                setTickers={handleUpdateTickers}
+                result={optimizationResult}
+                mcResult={mcResult}
+                onOptimize={handleOptimize}
               />
             )
           )}
 
           {activeTab === 'research' && (
-            <ResearchView tickers={tickers} />
+            <ResearchView
+              tickers={tickers}
+              onAddToPortfolio={handleAddToPortfolio}
+            />
           )}
 
           {activeTab === 'risk' && (
@@ -134,6 +184,14 @@ function App() {
               </div>
               <RiskQuestionnaire onComplete={handleRiskComplete} />
             </div>
+          )}
+
+          {activeTab === 'backtest' && (
+            <BacktestPage
+              tickers={tickers}
+              weights={optimalWeights}
+              onGoToOptimizer={() => setActiveTab('optimizer')}
+            />
           )}
         </main>
 

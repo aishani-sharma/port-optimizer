@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
 import apiClient from '../api/client';
-import type { PortfolioResponse } from '../types/portfolio';
-import EfficientFrontierChart from './EfficientFrontierChart';
-import type { MonteCarloResponse } from '../types/portfolio';
+import type { PortfolioResponse, MonteCarloResponse } from '../types/portfolio';
 import type { RiskConstraints } from '../types/riskProfile';
+import EfficientFrontierChart from './EfficientFrontierChart';
 import StockInfoCards from './StockInfoCards';
 
 interface PortfolioFormProps {
   riskConstraints: RiskConstraints;
   tickers: string[];
-  setTickers: React.Dispatch<React.SetStateAction<string[]>>;
+  setTickers: (tickers: string[] | ((prev: string[]) => string[])) => void;
+  result: PortfolioResponse | null;
+  mcResult: MonteCarloResponse | null;
+  onOptimize: (result: PortfolioResponse, mcResult: MonteCarloResponse, tickers: string[]) => void;
 }
 
-export default function PortfolioForm({ riskConstraints, tickers, setTickers }: PortfolioFormProps) {
+export default function PortfolioForm({
+  riskConstraints,
+  tickers,
+  setTickers,
+  result,
+  mcResult,
+  onOptimize,
+}: PortfolioFormProps) {
   const [newTicker, setNewTicker] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<PortfolioResponse | null>(null);
-  const [mcResult, setMcResult] = useState<MonteCarloResponse | null>(null);
 
   const handleAddTicker = (input: string) => {
     const cleanInput = input.trim();
@@ -29,19 +36,20 @@ export default function PortfolioForm({ riskConstraints, tickers, setTickers }: 
       .map((t) => t.trim().toUpperCase())
       .filter((t) => t.length > 0);
 
-    const updatedTickers = [...tickers];
-    parts.forEach((part) => {
-      if (!updatedTickers.includes(part)) {
-        updatedTickers.push(part);
-      }
+    setTickers((prev) => {
+      const updated = [...prev];
+      parts.forEach((part) => {
+        if (!updated.includes(part)) {
+          updated.push(part);
+        }
+      });
+      return updated;
     });
-
-    setTickers(updatedTickers);
     setNewTicker('');
   };
 
   const handleRemoveTicker = (tickerToRemove: string) => {
-    setTickers(tickers.filter((t) => t !== tickerToRemove));
+    setTickers((prev) => prev.filter((t) => t !== tickerToRemove));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,13 +68,13 @@ export default function PortfolioForm({ riskConstraints, tickers, setTickers }: 
         max_weight: riskConstraints.maxWeight,
         max_volatility: riskConstraints.maxVolatility,
       });
-      setResult(response.data);
       
       const mcResponse = await apiClient.post<MonteCarloResponse>('/portfolio/simulate', {
         tickers,
         num_portfolios: 3000,
       });
-      setMcResult(mcResponse.data);
+
+      onOptimize(response.data, mcResponse.data, tickers);
     } catch (err: any) {
       const apiErrorMessage = err.response?.data?.detail || err.message || 'An unexpected error occurred.';
       setError(apiErrorMessage);
@@ -107,7 +115,7 @@ export default function PortfolioForm({ riskConstraints, tickers, setTickers }: 
                     <button
                       type="button"
                       onClick={() => handleRemoveTicker(ticker)}
-                      className="text-zinc-500 hover:text-red-400 cursor-pointer font-bold"
+                      className="text-zinc-500 hover:text-amber-400 cursor-pointer font-bold"
                     >
                       ×
                     </button>
@@ -150,7 +158,7 @@ export default function PortfolioForm({ riskConstraints, tickers, setTickers }: 
             <button
               type="submit"
               disabled={loading || tickers.length === 0}
-              className="w-full bg-red-600 hover:bg-red-500 active:bg-red-700 disabled:bg-zinc-900 disabled:text-zinc-650 text-white font-semibold rounded-xl py-2.5 text-xs transition-all duration-200 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center space-x-2 border border-red-700/30"
+              className="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 disabled:bg-zinc-900 disabled:text-zinc-650 text-zinc-950 font-bold rounded-xl py-2.5 text-xs transition-all duration-200 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center space-x-2 border border-amber-400/30 shadow-lg shadow-amber-950/40"
             >
               {loading ? (
                 <>
@@ -173,7 +181,15 @@ export default function PortfolioForm({ riskConstraints, tickers, setTickers }: 
 
       {/* Center Panel: Efficient Frontier scatter chart */}
       <div className="lg:col-span-2">
-        {result && mcResult ? (
+        {loading ? (
+          <div className="bg-zinc-900/20 border border-zinc-850 rounded-xl p-8 text-center min-h-[480px] flex flex-col items-center justify-center animate-pulse space-y-4">
+            <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+            <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Optimizing Assets...</h3>
+            <p className="text-[11px] text-zinc-550 max-w-xs leading-relaxed">
+              Calculating MPT frontier points and Sharpe allocations.
+            </p>
+          </div>
+        ) : result && mcResult ? (
           <EfficientFrontierChart
             simulations={mcResult.simulations}
             bestPortfolio={mcResult.best_sharpe_portfolio}
@@ -206,7 +222,7 @@ export default function PortfolioForm({ riskConstraints, tickers, setTickers }: 
                   <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block">Sharpe Ratio</span>
                   <span className="text-zinc-500 text-[10px]">Risk-adjusted performance</span>
                 </div>
-                <span className="font-mono text-lg font-bold text-red-500">
+                <span className="font-mono text-lg font-bold text-amber-400">
                   {formatDecimal(result.sharpe_ratio)}
                 </span>
               </div>
@@ -251,7 +267,7 @@ export default function PortfolioForm({ riskConstraints, tickers, setTickers }: 
                     {/* Visual progress bar */}
                     <div className="w-full bg-zinc-950 h-1.5 rounded-full overflow-hidden border border-zinc-850/60">
                       <div
-                        className="bg-red-500 h-full rounded-full transition-all duration-550"
+                        className="bg-amber-500 h-full rounded-full transition-all duration-550"
                         style={{ width: `${weight * 100}%` }}
                       />
                     </div>

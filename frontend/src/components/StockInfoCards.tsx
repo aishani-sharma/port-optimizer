@@ -1,44 +1,10 @@
 import { useEffect, useState } from 'react';
 import apiClient from '../api/client';
 import type { StockInfo, StockInfoResponse } from '../types/stockInfo';
+import { formatCurrency, formatMarketCap } from '../utils/currency';
 
 interface StockInfoCardsProps {
   tickers: string[];
-}
-
-function getCurrencySymbol(currency: string): string {
-  switch (currency) {
-    case 'USD': return '$';
-    case 'INR': return '₹';
-    case 'EUR': return '€';
-    case 'GBP': return '£';
-    case 'JPY': return '¥';
-    case 'CAD': return 'C$';
-    case 'AUD': return 'A$';
-    default: return currency ? `${currency} ` : '$';
-  }
-}
-
-function formatMarketCap(value: number | null, currency: string): string {
-  if (value === null || value === undefined) return 'N/A';
-  const symbol = getCurrencySymbol(currency);
-  const absVal = Math.abs(value);
-  if (absVal >= 1.0e12) {
-    return `${symbol}${(value / 1.0e12).toFixed(2)}T`;
-  }
-  if (absVal >= 1.0e9) {
-    return `${symbol}${(value / 1.0e9).toFixed(2)}B`;
-  }
-  if (absVal >= 1.0e6) {
-    return `${symbol}${(value / 1.0e6).toFixed(2)}M`;
-  }
-  return `${symbol}${value.toLocaleString()}`;
-}
-
-function formatPrice(value: number | null, currency: string): string {
-  if (value === null || value === undefined) return 'N/A';
-  const symbol = getCurrencySymbol(currency);
-  return `${symbol}${value.toFixed(2)}`;
 }
 
 export default function StockInfoCards({ tickers }: StockInfoCardsProps) {
@@ -123,7 +89,7 @@ export default function StockInfoCards({ tickers }: StockInfoCardsProps) {
           return (
             <div
               key={stock.symbol}
-              className="bg-zinc-900/20 backdrop-blur-md border border-zinc-850 p-3 rounded-xl flex flex-col justify-between transition-all duration-300 hover:border-red-500/30 hover:bg-zinc-900/40"
+              className="bg-zinc-900/20 backdrop-blur-md border border-zinc-850 p-3 rounded-xl flex flex-col justify-between transition-all duration-300 hover:border-amber-500/30 hover:bg-zinc-900/40"
             >
               <div>
                 <div className="flex justify-between items-start gap-2">
@@ -138,7 +104,7 @@ export default function StockInfoCards({ tickers }: StockInfoCardsProps) {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <span className="font-mono text-sm font-bold text-zinc-200 block">
-                      {formatPrice(stock.current_price, stock.currency)}
+                      {formatCurrency(stock.current_price, stock.currency || stock.symbol)}
                     </span>
                     <span className={`font-mono font-bold text-[10px] ${isReturnPositive ? 'text-emerald-500' : 'text-red-500'}`}>
                       {isReturnPositive ? '+' : ''}{(stock.one_year_return * 100).toFixed(2)}%
@@ -151,7 +117,7 @@ export default function StockInfoCards({ tickers }: StockInfoCardsProps) {
                 <div>
                   <span className="text-zinc-550 block text-[9px] uppercase tracking-wider font-semibold">Market Cap</span>
                   <span className="font-semibold text-zinc-350 font-mono">
-                    {formatMarketCap(stock.market_cap, stock.currency)}
+                    {formatMarketCap(stock.market_cap, stock.currency || stock.symbol)}
                   </span>
                 </div>
                 <div>
