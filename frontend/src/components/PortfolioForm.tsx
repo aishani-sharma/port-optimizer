@@ -8,10 +8,11 @@ import StockInfoCards from './StockInfoCards';
 
 interface PortfolioFormProps {
   riskConstraints: RiskConstraints;
+  tickers: string[];
+  setTickers: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-export default function PortfolioForm({ riskConstraints }: PortfolioFormProps) {
-  const [tickers, setTickers] = useState<string[]>(['AAPL', 'MSFT', 'GOOGL', 'AMZN']);
+export default function PortfolioForm({ riskConstraints, tickers, setTickers }: PortfolioFormProps) {
   const [newTicker, setNewTicker] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
